@@ -142,20 +142,16 @@ def evaluate_test(answers, gender):
     results = []
     
     def scale_sort_key(code):
-        # L, K, F — всегда в начале, в порядке L, K, F
         if code == "L":
             return (0, 0)
         if code == "K":
             return (0, 1)
         if code == "F":
             return (0, 2)
-        # B1, B2, ...
         if code.startswith("B") and code[1:].replace("-М","").replace("-Ж","").isdigit():
             return (1, int(''.join(filter(str.isdigit, code))))
-        # A1, A2, ...
         if code.startswith("A") and code[1:].isdigit():
             return (2, int(code[1:]))
-        # Остальные — в конец
         return (3, code)
     
     for code in sorted(scale_q_map, key=scale_sort_key):
@@ -217,7 +213,6 @@ class SubmitTestAPI(APIView):
 
 
 def load_questions(gender):
-    # Возвращает вопросы в случайном порядке
     questions = list(Question.objects.filter(gender=gender))
     random.shuffle(questions)
     return [q.text for q in questions]
@@ -237,7 +232,6 @@ class StartTestView(APIView):
         if gender not in ("M", "F"):
             return redirect('index')
         request.session['gender'] = gender
-        # Формируем случайный порядок вопросов и сохраняем в сессии
         question_numbers = list(Question.objects.filter(gender=gender).values_list('number', flat=True))
         random.shuffle(question_numbers)
         request.session['question_order'] = question_numbers
@@ -254,7 +248,6 @@ class TestPageView(APIView):
             return redirect('index')
         question_order = request.session.get('question_order')
         if not question_order:
-            # fallback: если нет порядка, сгенерировать новый
             question_numbers = list(Question.objects.filter(gender=gender).values_list('number', flat=True))
             random.shuffle(question_numbers)
             question_order = question_numbers
@@ -299,12 +292,10 @@ class SubmitTestView(APIView):
         test_result = TestResult.objects.create(
             results=results_to_save
         )
-        # Обновляем время создания, добавляя 3 часа
         test_result.created_at = timezone.now() + timedelta(hours=3)
         test_result.save(update_fields=['created_at'])
         print("Original time:", timezone.now())
         print("Adjusted time:", test_result.created_at)
-        # Очищаем порядок вопросов после завершения теста
         if 'question_order' in request.session:
             del request.session['question_order']
         return Response({
