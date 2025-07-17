@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты теста</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f7f7f7;
+            padding: 30px 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 36px 32px 32px 32px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-link-block {
+            background: #f2f8ff;
+            border-radius: 10px;
+            padding: 18px 24px;
+            margin-bottom: 32px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .result-link-block .title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a237e;
+        }
+        .result-link-block a {
+            font-size: 1rem;
+            color: #1976d2;
+            word-break: break-all;
+            text-decoration: underline;
+        }
+        .scale-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .scale-name {
+            flex: 2;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .bar-wrapper {
+            flex: 4;
+            margin: 0 12px;
+        }
+        .bar-container {
+            position: relative;
+            background-color: #e0e0e0;
+            height: 16px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+        .low { background-color: #fdd835; }
+        .medium { background-color: #66bb6a; }
+        .high { background-color: #ef5350; }
+        .bar-value {
+            width: 50px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        button, .home-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            margin: 10px 6px;
+            font-size: 15px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 154, 86, 0.13);
+        }
+        button:hover, .home-button:hover {
+            background: linear-gradient(135deg, #ff8a46 0%, #ff5b5b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 154, 86, 0.18);
+        }
+        .home-button svg, button svg {
+            transition: transform 0.3s ease;
+        }
+        .home-button:hover svg, button:hover svg {
+            transform: scale(1.1);
+        }
+        .hidden {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background-color: #fafafa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        button svg, .home-button svg {
+            margin: 0;
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px 2vw;
+            }
+            .scale-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .bar-wrapper {
+                margin: 0 0 8px 0;
+            }
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    {% if show_result_link %}
+    <div class="result-link-block">
+        <div class="title">Ваша ссылка на результат</div>
+        <a href="{{ result_link }}">{{ result_link }}</a>
+    </div>
+    {% endif %}
+    <h1>Результаты теста</h1>
+    <p style="text-align:center;color:#666;font-size:1.08rem;margin-bottom:28px;">Анализ ваших ответов по шкалам MMPI</p>
+
+    <!-- Основные шкалы -->
+    {% for item in results %}
+    {% if not item.is_additional %}
+    <div class="scale-container">
+        <div class="scale-name">{{ item.name }}</div>
+        <div class="bar-wrapper">
+            <div class="bar-container">
+                {% if item.t_score is not None %}
+                    <div class="bar-fill {% if item.t_score < 30 %}low{% elif item.t_score < 70 %}medium{% else %}high{% endif %}"
+                         style="width: {% if item.t_score_position and item.t_score_position > 0 %}{{ item.t_score_position|floatformat:2 }}{% else %}0{% endif %}%;">
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="bar-value">
+            {% if item.t_score is not None %}
+                {% if item.t_score > 120 %}
+                    120+
+                {% elif item.t_score < 0 %}
+                    0
+                {% else %}
+                    {{ item.t_score }}
+                {% endif %}
+            {% else %}
+                —
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% if dont_know_count %}
+    <div style="text-align:center;color:#555;margin:18px 0 24px 0;font-size:1.08rem;">
+        Ответов "Не знаю": <strong>{{ dont_know_count }}</strong>
+    </div>
+    {% endif %}
+
+    <!-- Кнопки -->
+    <div class="button-group">
+        <button onclick="toggleSection('additional')">Показать дополнительные шкалы</button>
+        <button onclick="toggleSection('full-table')">Показать полную таблицу</button>
+        <a href="{% url 'index' %}" class="home-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9,22 9,12 15,12 15,22"></polyline>
+            </svg>
+            Вернуться на главную
+        </a>
+    </div>
+
+    <!-- Доп. шкалы -->
+    <div id="additional" class="hidden">
+        {% for item in results %}
+        {% if item.is_additional %}
+        <div class="scale-container">
+            <div class="scale-name">{{ item.name }}</div>
+            <div class="bar-wrapper">
+                <div class="bar-container">
+                    {% if item.t_score %}
+                    <div class="bar-fill
+                                    {% if item.t_score < 30 %}low
+                                    {% elif item.t_score < 70 %}medium
+                                    {% else %}high{% endif %}"
+                         style="width: {{ item.t_score_position }}%;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="bar-value">
+                {% if item.t_score is not None %}
+                    {% if item.t_score > 120 %}
+                        120+
+                    {% elif item.t_score < 0 %}
+                        0
+                    {% else %}
+                        {{ item.t_score }}
+                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Таблица -->
+    <div id="full-table" class="hidden">
+        <table>
+            <thead>
+            <tr>
+                <th>Шкала</th>
+                <th>Название</th>
+                <th>Сырой балл</th>
+                <th>ΔK</th>
+                <th>Корр. балл</th>
+                <th>M</th>
+                <th>SD</th>
+                <th>T-балл</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in results %}
+            <tr>
+                <td>{{ item.scale }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.raw }}</td>
+                <td>{{ item.delta_k }}</td>
+                <td>{{ item.corrected }}</td>
+                <td>{{ item.mean }}</td>
+                <td>{{ item.sd }}</td>
+                <td>
+                    {% if item.t_score is not None %}
+                        {{ item.t_score }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function toggleSection(id) {
+        const el = document.getElementById(id);
+        el.classList.toggle("hidden");
+    }
+</script>
+
+</body>
+</html>

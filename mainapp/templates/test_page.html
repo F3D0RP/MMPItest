@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Тест</title>
+
+  {{ questions|json_script:"questions-data" }}
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f7f7;
+      padding: 30px 0;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 36px 32px 32px 32px;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .progress-outer {
+      width: 100%;
+      background: #e0e0e0;
+      border-radius: 8px;
+      height: 16px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .progress-inner {
+      background: linear-gradient(90deg, #ff9a56 0%, #ff6b6b 100%);
+      height: 100%;
+      border-radius: 8px;
+      width: 0%;
+      transition: width 0.4s;
+    }
+    .question-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 32px 18px 24px 18px;
+      margin-bottom: 18px;
+    }
+    .question-number {
+      color: #888;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .question-text {
+      font-size: 1.18rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #222;
+    }
+    .answers {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-answer {
+      padding: 12px 28px;
+      font-size: 1.08rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(255, 154, 86, 0.08);
+    }
+    .btn-answer.green {
+      background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
+      color: #fff;
+    }
+    .btn-answer.gray {
+      background: #e0e0e0;
+      color: #333;
+    }
+    .btn-answer.red {
+      background: linear-gradient(135deg, #ef5350 0%, #f44336 100%);
+      color: #fff;
+    }
+    .btn-answer.green:hover {
+      background: linear-gradient(135deg, #43a047 0%, #388e3c 100%);
+      transform: translateY(-2px);
+    }
+    .btn-answer.gray:hover {
+      background: #bdbdbd;
+      transform: translateY(-2px);
+    }
+    .btn-answer.red:hover {
+      background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+      transform: translateY(-2px);
+    }
+    .quick-btns {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .quick-btn {
+      padding: 10px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(255, 154, 86, 0.13);
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .quick-btn:hover {
+      background: linear-gradient(135deg, #ff8a46 0%, #ff5b5b 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255, 154, 86, 0.18);
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 12px 2vw;
+      }
+      .question-card {
+        padding: 18px 4vw 14px 4vw;
+      }
+      .answers, .quick-btns {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+  <script>
+    let questions = JSON.parse(document.getElementById('questions-data').textContent);
+    let currentIndex = 0;
+    let answers = {};
+
+    function renderQuestion() {
+      const container = document.getElementById("card");
+      const progressBar = document.getElementById("progress-bar");
+
+      if (currentIndex >= questions.length) {
+        container.innerHTML = `
+          <div class="text-center">
+            <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:18px;color:#222;">Тест завершён!</h2>
+            <form method="post" action="{% url 'submit_test' %}" id="result-form" onsubmit="submitAnswers(event)">
+              {% csrf_token %}
+              <input type="hidden" name="answers" id="answers-json" />
+              <button type="submit" class="quick-btn" style="margin-top:18px;">Перейти к результатам</button>
+            </form>
+          </div>
+        `;
+        progressBar.style.width = "100%";
+        return;
+      }
+
+      const [qIndex, qText] = questions[currentIndex];
+      const progress = Math.round((currentIndex / questions.length) * 100);
+      progressBar.style.width = progress + "%";
+
+      container.innerHTML = `
+        <div class="question-card">
+          <div class="question-number">Вопрос №${qIndex}</div>
+          <div class="question-text">${qText}</div>
+          <div class="answers">
+            <button onclick="answer(${qIndex}, 'Верно')" class="btn-answer green">Верно</button>
+            <button onclick="answer(${qIndex}, 'Не знаю')" class="btn-answer gray">Не знаю</button>
+            <button onclick="answer(${qIndex}, 'Неверно')" class="btn-answer red">Неверно</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function answer(qIndex, value) {
+      answers[qIndex] = value;
+      currentIndex++;
+      renderQuestion();
+    }
+
+    function submitAnswers(event) {
+      document.getElementById("answers-json").value = JSON.stringify(answers);
+    }
+
+    function markAllCorrect() {
+      for (const [qIndex] of questions) {
+        answers[qIndex] = 'Верно';
+      }
+      currentIndex = questions.length;
+      renderQuestion();
+    }
+    function markAllIncorrect() {
+      for (const [qIndex] of questions) {
+        answers[qIndex] = 'Неверно';
+      }
+      currentIndex = questions.length;
+      renderQuestion();
+    }
+
+    window.onload = renderQuestion;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Тест СМИЛ / MMPI</h1>
+    <div class="progress-outer">
+      <div id="progress-bar" class="progress-inner"></div>
+    </div>
+    <div id="card"></div>
+    <div class="quick-btns">
+      <button onclick="markAllCorrect()" class="quick-btn">Отметить все как 'Верно'</button>
+      <button onclick="markAllIncorrect()" class="quick-btn">Отметить все как 'Неверно'</button>
+    </div>
+  </div>
+</body>
+</html>

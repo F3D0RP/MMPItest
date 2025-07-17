@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты теста</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .result-link-block {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+            color: white;
+        }
+
+        .result-link-block .title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .result-link-block a {
+            color: white;
+            text-decoration: underline;
+            word-break: break-all;
+            font-size: 1rem;
+        }
+
+        .main-scales {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .scale-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .scale-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .scale-card.dark {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+        }
+
+        .scale-card.orange {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            color: white;
+        }
+
+        .scale-card.light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+        }
+
+        .scale-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .scale-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .scale-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .scale-bar.light {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .scale-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .scale-fill.low { background: linear-gradient(90deg, #fdd835 0%, #fbc02d 100%); }
+        .scale-fill.medium { background: linear-gradient(90deg, #66bb6a 0%, #4caf50 100%); }
+        .scale-fill.high { background: linear-gradient(90deg, #ef5350 0%, #f44336 100%); }
+
+        .scale-fill.light.low { background: linear-gradient(90deg, #ffb74d 0%, #ff9800 100%); }
+        .scale-fill.light.medium { background: linear-gradient(90deg, #81c784 0%, #66bb6a 100%); }
+        .scale-fill.light.high { background: linear-gradient(90deg, #e57373 0%, #f44336 100%); }
+
+        .scale-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        button, .home-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 154, 86, 0.3);
+        }
+
+        button:hover, .home-button:hover {
+            background: linear-gradient(135deg, #ff8a46 0%, #ff5b5b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 154, 86, 0.4);
+        }
+
+        button svg, .home-button svg {
+            transition: transform 0.3s ease;
+        }
+
+        button:hover svg, .home-button:hover svg {
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .additional-scales {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .dont-know-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f4;
+            color: #555;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            .main-scales {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    {% if show_result_link %}
+    <div class="result-link-block">
+        <div class="title">Ваша ссылка на результат</div>
+        <a href="{{ result_link }}">{{ result_link }}</a>
+    </div>
+    {% endif %}
+    <div class="header">
+        <h1>Результаты теста</h1>
+        <p>Анализ ваших ответов по шкалам MMPI</p>
+    </div>
+
+    <!-- Классическая часть ниже -->
+    <!-- Основные шкалы -->
+    {% for item in results %}
+    {% if not item.is_additional %}
+    <div class="scale-container">
+        <div class="scale-name">{{ item.name }}</div>
+        <div class="bar-wrapper">
+            <div class="bar-container">
+                {% if item.t_score is not None %}
+                    <div class="bar-fill {% if item.t_score < 30 %}low{% elif item.t_score < 70 %}medium{% else %}high{% endif %}"
+                         style="width: {% if item.t_score_position and item.t_score_position > 0 %}{{ item.t_score_position|floatformat:2 }}{% else %}0{% endif %}%;">
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="bar-value">
+            {% if item.t_score is not None %}
+                {% if item.t_score > 120 %}
+                    120+
+                {% elif item.t_score < 0 %}
+                    0
+                {% else %}
+                    {{ item.t_score }}
+                {% endif %}
+            {% else %}
+                —
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% if dont_know_count %}
+    <div class="text-center text-lg text-gray-700 my-4">
+        Ответов "Не знаю": <strong>{{ dont_know_count }}</strong>
+    </div>
+    {% endif %}
+
+    <!-- Кнопки -->
+    <div class="button-group">
+        <button onclick="toggleSection('additional')">Показать дополнительные шкалы</button>
+        <button onclick="toggleSection('full-table')">Показать полную таблицу</button>
+        <a href="{% url 'index' %}" class="home-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9,22 9,12 15,12 15,22"></polyline>
+            </svg>
+            Вернуться на главную
+        </a>
+    </div>
+
+    <!-- Доп. шкалы -->
+    <div id="additional" class="hidden">
+        {% for item in results %}
+        {% if item.is_additional %}
+        <div class="scale-container">
+            <div class="scale-name">{{ item.name }}</div>
+            <div class="bar-wrapper">
+                <div class="bar-container">
+                    {% if item.t_score %}
+                    <div class="bar-fill
+                                    {% if item.t_score < 30 %}low
+                                    {% elif item.t_score < 70 %}medium
+                                    {% else %}high{% endif %}"
+                         style="width: {{ item.t_score_position }}%;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="bar-value">
+                {% if item.t_score is not None %}
+                    {% if item.t_score > 120 %}
+                        120+
+                    {% elif item.t_score < 0 %}
+                        0
+                    {% else %}
+                        {{ item.t_score }}
+                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Таблица -->
+    <div id="full-table" class="hidden">
+        <table>
+            <thead>
+            <tr>
+                <th>Шкала</th>
+                <th>Название</th>
+                <th>Сырой балл</th>
+                <th>ΔK</th>
+                <th>Корр. балл</th>
+                <th>M</th>
+                <th>SD</th>
+                <th>T-балл</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in results %}
+            <tr>
+                <td>{{ item.scale }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.raw }}</td>
+                <td>{{ item.delta_k }}</td>
+                <td>{{ item.corrected }}</td>
+                <td>{{ item.mean }}</td>
+                <td>{{ item.sd }}</td>
+                <td>
+                    {% if item.t_score is not None %}
+                        {{ item.t_score }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function toggleSection(id) {
+        const el = document.getElementById(id);
+        el.classList.toggle("hidden");
+    }
+</script>
+
+</body>
+</html>
